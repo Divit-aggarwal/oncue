@@ -41,12 +41,13 @@ def schedule(plan: Plan, timeline: Timeline, search_dirs: list[Path]) -> list[Sc
             if not media.streams(info, "audio"):
                 raise SoundError(f"sound asset {path} has no audio stream")
             time = timing.start + anchors[sound.at] + sound.offset
-            if not 0 <= time < timeline.duration:
+            if not 0 <= time <= timeline.duration:
                 raise SoundError(
                     f"scene {scene.id}: sound {sound.asset!r} starts at {time:.2f}s, "
                     f"outside the {timeline.duration:.2f}s narration"
                 )
-            length = min(sound.duration or media.duration(info), timeline.duration - time)
+            length = min(sound.duration or media.duration(info), timeline.duration)
+            time = min(time, timeline.duration - length)
             scheduled.append(
                 ScheduledSound(
                     scene_id=scene.id,

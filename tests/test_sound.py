@@ -35,6 +35,14 @@ def test_sound_is_scheduled_on_its_cue_and_mixed(tmp_path):
     assert media.streams(info, "audio")[0]["channels"] == 2
 
 
+def test_sound_at_end_of_video_finishes_at_the_end(tmp_path):
+    ffmpeg("-f", "lavfi", "-i", "sine=frequency=880:duration=0.5", str(tmp_path / "tone.wav"))
+    scenes = [SCENES[0], dict(SCENES[1], sounds=[{"asset": "tone", "event": "outro", "at": "end"}])]
+    tl = timeline()
+    [sound] = schedule(Plan.model_validate({"scenes": scenes}), tl, [tmp_path])
+    assert sound.time + sound.duration == pytest.approx(tl.duration)
+
+
 def test_sound_outside_narration_is_rejected(tmp_path):
     ffmpeg("-f", "lavfi", "-i", "sine=frequency=880:duration=0.5", str(tmp_path / "tone.wav"))
     scenes = [
