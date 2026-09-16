@@ -34,7 +34,8 @@ One Python package, `src/video_automation/`, with one module per production laye
 | `media.py` | FFmpeg/ffprobe subprocess wrapper, probing, volume stats | ffmpeg |
 | `voice.py` | Recording validation and ingest, WAV conversion, `Transcriber` interface, faster-whisper backend, script-to-recording alignment | spec, media |
 | `animation.py` | `TimedScene` base class for Manim components, isolated render subprocess | manim, spec |
-| `placeholders.py` | Temporary, non-canonical `TextCard` component used by tests and examples | animation |
+| `placeholders.py` | Temporary, non-canonical `TextCard` component used by tests | animation |
+| `universe/interview_v1.py` | First canonical component: Candidate + Interviewer (see `docs/08_VISUAL_UNIVERSE_CONTRACT.md`) | animation |
 | `sound.py` | Asset resolution, event scheduling from the timeline, FFmpeg mix | spec, media |
 | `captions.py` | Caption segmentation, SRT, caption images rendered through Manim/Pango | spec, manim |
 | `compose.py` | One FFmpeg pass: frame-exact scene concat, caption overlays, audio mux | media |
@@ -128,10 +129,10 @@ After `construct`, the scene is padded to its duration. The compose step pads or
 A component is any `TimedScene` subclass that can be imported:
 
 * built-in temporary: `video_automation.placeholders:TextCard`
+* canonical, creator-approved: `video_automation.universe.<name>_v<N>:<Class>`, currently `video_automation.universe.interview_v1:Interview`
 * episode-local: `episodes/<id>/scenes.py` → `scenes:MyScene` (the episode directory is on the import path during renders)
-* future canonical library: any importable package, e.g. `universe.characters.v1:Narrator`
 
-Versioning uses module names (`...v1`, `...v2`). Existing plans keep pointing at the version they were approved with. The engine has no canonical characters, locations, colors or styles. `placeholders.py` exists only for testing and examples.
+Versioning uses module names (`..._v1`, `..._v2`). Existing plans keep pointing at the version they were approved with. The engine itself (timing, pipeline, CLI) knows nothing about any component's internals. It passes timing, `params` and `events` to whichever class the plan names. `placeholders.py` exists only for tests.
 
 ## Sound
 

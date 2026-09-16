@@ -75,7 +75,7 @@ Rules enforced at validation:
 * Every sound event names the on-screen `event` it accompanies.
 * `volume` is between 0 and 4. `duration` is greater than 0 if present. Fades are 0 or more.
 
-Events are interpreted by the component. `TextCard` supports `show` (`params.text`) and `clear`. Camera moves and transitions are expressed the same way: an event `action` implemented by the component.
+Events are interpreted by the component. `TextCard` supports `show` (`params.text`) and `clear`. `interview_v1:Interview` supports `enter`, `exit`, `speak` and `react` (see `08_VISUAL_UNIVERSE_CONTRACT.md`). Camera moves and transitions are expressed the same way: an event `action` implemented by the component.
 
 ## Generated Artifacts
 
