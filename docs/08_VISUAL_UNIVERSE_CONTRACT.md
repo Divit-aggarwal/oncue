@@ -68,6 +68,7 @@ Rules:
 * Scene time, action time, speech time and cue time are independent. An action happens at its event time, not at scene start.
 * Events within one frame of each other animate together. Transitions last at most 0.3 s and are shortened so they never run into the next event.
 * An action in the scene's last frame changes state but is not animated.
+* A `speak` whose `until` resolves at or before its start (for example `at: "end"` with the default `until`) is a `RenderError`, not a clamped warning. Zero-length speech is always a plan mistake, unlike sounds and events that drift past a scene edge because of voice timing.
 * Each scene is rendered independently. Only on-stage presence carries across scenes, declared with `on_stage`. Bubbles and marks do not carry over.
 
 ### Deliberately Undefined

@@ -97,7 +97,7 @@ Deliberate limitations:
 
 * The `transcript` stage does not fingerprint `voice.py`, so a change to the transcription code does not re-transcribe existing episodes. Delete `build/transcript.json` to force it.
 * Changing any scene's narration changes the Whisper prompt and triggers transcription again, which overwrites manual edits to `build/transcript.json`.
-* The component fingerprint covers the component module's directory, not modules it imports from elsewhere.
+* The component fingerprint covers every `.py` file in the component module's directory, not modules it imports from elsewhere. All canonical components share `universe/`, so editing or adding one re-renders scenes that use any of them. This errs toward re-rendering, never toward stale output.
 * Recording, render and output media are git-ignored. `build/transcript.json`, `build/timeline.json`, `output/final.json` and `output/final.srt` are tracked, so timing and output metadata can be versioned with the episode.
 
 ## Timing Bridge
