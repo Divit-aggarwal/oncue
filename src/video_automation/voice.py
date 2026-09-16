@@ -1,7 +1,7 @@
 import logging
+import math
 import shutil
 from difflib import SequenceMatcher
-from itertools import pairwise
 from pathlib import Path
 from typing import Protocol
 
@@ -107,10 +107,8 @@ def to_wav(source: Path, target: Path, sample_rate: int) -> None:
             "-i",
             source,
             "-vn",
-            "-ac",
-            "2",
-            "-ar",
-            str(sample_rate),
+            "-af",
+            media.stereo_filter(source, sample_rate),
             "-c:a",
             "pcm_s16le",
             "-f",
@@ -170,7 +168,7 @@ def align(plan: Plan, transcript: Transcript, fps: int) -> Timeline:
     boundaries = [0]
     for i, idx in enumerate(first_word[1:], start=1):
         lead_start = max(words[idx - 1].end, words[idx].start - SCENE_LEAD_SECONDS)
-        wanted = round(lead_start * fps)
+        wanted = math.floor(lead_start * fps)
         frame = min(max(wanted, boundaries[-1] + 1), total_frames - (scene_count - i))
         if frame != wanted:
             notes.append(
@@ -201,15 +199,21 @@ def align(plan: Plan, transcript: Transcript, fps: int) -> Timeline:
                 )
             cues[name] = min(max(moment, start), end) - start
         offset += len(scene_tokens)
+        next_first = first_word[i + 1] if i + 1 < scene_count else len(words)
         local = [
-            Word(text=w.text, start=w.start - start, end=w.end - start, probability=w.probability)
-            for w in words
-            if start <= w.start < end
+            Word(
+                text=w.text,
+                start=max(w.start - start, 0.0),
+                end=max(w.end - start, 0.0),
+                probability=w.probability,
+            )
+            for w in words[first_word[i] if i else 0 : next_first]
         ]
+        edges = [0.0, *(t for w in local for t in (w.start, w.end)), end - start]
         pauses = [
-            Pause(start=a.end, end=b.start)
-            for a, b in pairwise(local)
-            if b.start - a.end >= PAUSE_SECONDS
+            Pause(start=a, end=b)
+            for a, b in zip(edges[::2], edges[1::2], strict=True)
+            if b - a >= PAUSE_SECONDS
         ]
         scenes.append(
             SceneTiming(

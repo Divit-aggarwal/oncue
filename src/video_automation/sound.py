@@ -63,13 +63,17 @@ def schedule(plan: Plan, timeline: Timeline, search_dirs: list[Path]) -> list[Sc
 def mix(
     voice_wav: Path, sounds: list[ScheduledSound], duration: float, sample_rate: int, output: Path
 ) -> None:
-    fmt = f"aresample={sample_rate},aformat=sample_fmts=fltp:channel_layouts=stereo"
     inputs: list[str | Path] = ["-i", voice_wav]
-    filters = [f"[0:a]{fmt},apad,atrim=0:{duration:.6f}[voice]"]
+    voice_fmt = media.stereo_filter(voice_wav, sample_rate)
+    filters = [f"[0:a]{voice_fmt},apad,atrim=0:{duration:.6f}[voice]"]
     labels = ["[voice]"]
     for i, s in enumerate(sounds, start=1):
         inputs += ["-i", s.path]
-        chain = [fmt, f"atrim=0:{s.duration:.6f}", "asetpts=PTS-STARTPTS"]
+        chain = [
+            media.stereo_filter(s.path, sample_rate),
+            f"atrim=0:{s.duration:.6f}",
+            "asetpts=PTS-STARTPTS",
+        ]
         if s.fade_in:
             chain.append(f"afade=t=in:st=0:d={s.fade_in:.6f}")
         if s.fade_out:

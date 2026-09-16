@@ -54,6 +54,12 @@ def streams(info: dict, kind: str) -> list[dict]:
     return [s for s in info.get("streams", []) if s.get("codec_type") == kind]
 
 
+def stereo_filter(path: Path, sample_rate: int) -> str:
+    audio = streams(probe(path), "audio")
+    layout = "pan=stereo|c0=c0|c1=c0," if audio and audio[0].get("channels") == 1 else ""
+    return f"aresample={sample_rate},{layout}aformat=sample_fmts=fltp:channel_layouts=stereo"
+
+
 def duration(info: dict) -> float:
     return float(info.get("format", {}).get("duration") or 0.0)
 

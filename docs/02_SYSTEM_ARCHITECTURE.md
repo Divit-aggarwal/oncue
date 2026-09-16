@@ -73,7 +73,7 @@ Each episode transition is appended to `episode.json` `history` with a timestamp
 
 `pipeline.generate` runs these stages in order:
 
-1. `voice_wav`: convert the recording to 48 kHz stereo PCM
+1. `voice_wav`: convert the recording to 48 kHz stereo PCM (mono recordings are duplicated to both channels at their original level)
 2. `transcript`: faster-whisper with word timestamps, VAD disabled so pauses survive, prompted with the approved narration
 3. `timeline`: align the plan to the transcript
 4. `scene:<id>`: one Manim render per scene, run in parallel (`render.workers`)
@@ -105,10 +105,10 @@ Deliberate limitations:
 
 1. Scene narration and transcript words are tokenized the same way: whitespace split, punctuation stripped (including `।`), lowercased. Devanagari and Roman Hindi are kept as-is.
 2. `difflib.SequenceMatcher` matches script tokens to spoken tokens. Ad-libs and misrecognitions are tolerated. `match_ratio` is recorded, and a value below 0.5 produces a QC warning.
-3. Each scene after the first starts 0.2 s before its first spoken word, never earlier than the previous word's end. The first scene starts at 0 and the last ends at the end of the recording, so pauses belong to the scene they follow.
+3. Each scene after the first starts 0.2 s before its first spoken word, never earlier than the previous word's end, rounded down to a frame. The first scene starts at 0 and the last ends at the end of the recording, so pauses belong to the scene they follow.
 4. Boundaries are snapped to the frame grid. Scene frame counts sum exactly to the total, so there is no cumulative drift. Every scene gets at least one frame: boundaries that would collide (Whisper often gives consecutive words identical, zero-length timestamps) are nudged forward and recorded in `timeline.json` `notes`. A recording with fewer frames than scenes is an error.
 5. Cues (`"cues": {"notes": "brought notes"}`) resolve to the start time of the first matched word at or after the phrase, relative to the scene start and clamped inside the scene. If Whisper recognised none of those words, the cue falls back to the end of the last recognised word before the phrase (or the scene start), and a note is recorded.
-6. Words and pauses of 0.3 s or longer are included per scene.
+6. Each scene carries the words assigned to it by alignment (not by timestamp, since Whisper words often touch across the boundary) and every silence of 0.3 s or longer, including silence before its first word and after its last word.
 
 Components never hard-code the video duration. `TimedScene` exposes:
 

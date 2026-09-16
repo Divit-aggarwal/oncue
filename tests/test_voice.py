@@ -36,7 +36,11 @@ def test_pauses_are_detected():
     words = spoken_words()
     words = words[:3] + [Word(text=w.text, start=w.start + 1.0, end=w.end + 1.0) for w in words[3:]]
     timeline = align(PLAN, transcript(words, duration=7.0), fps=30)
-    assert len(timeline.scenes[0].pauses) == 1
+    claim = timeline.scenes[0]
+    inner, trailing = claim.pauses
+    assert inner.start == pytest.approx(words[2].end) and inner.end == pytest.approx(words[3].start)
+    assert trailing.start == pytest.approx(words[9].end)
+    assert trailing.end == pytest.approx(claim.duration)
 
 
 def test_ad_libs_and_misrecognitions_still_align():
@@ -159,3 +163,44 @@ def test_fillers_repeats_and_punctuation_do_not_break_alignment():
     assert timeline.match_ratio == 1.0
     assert [w.text for w in timeline.scenes[1].words][-1] == "Notes"
     assert timeline.scenes[1].start == pytest.approx(1.0)
+
+
+def test_touching_whisper_timestamps_keep_first_word_in_its_own_scene():
+    plan = simple_plan(
+        "Basically RAG mein model ko dobara train nahi kar rahe.",
+        "Hum bas model ko notes de rahe hain.",
+    )
+    spoken = [
+        ("Basically", 0.0, 1.18),
+        ("RAG", 1.18, 1.68),
+        ("mein", 1.68, 1.92),
+        ("model", 1.92, 2.70),
+        ("ko", 2.70, 2.90),
+        ("dobara", 2.90, 3.16),
+        ("train", 3.16, 3.48),
+        ("nahi", 3.48, 3.78),
+        ("kar", 3.78, 3.94),
+        ("rahe.", 3.94, 4.82),
+        ("Hum", 4.82, 5.00),
+        ("bas", 5.00, 5.16),
+        ("model", 5.16, 5.50),
+        ("ko", 5.50, 5.66),
+        ("notes", 5.66, 6.02),
+        ("de", 6.02, 6.24),
+        ("rahe", 6.24, 6.54),
+        ("hain.", 6.54, 7.12),
+    ]
+    timeline = align(plan, timed(*spoken, duration=7.5), fps=30)
+    claim, notes = timeline.scenes
+    assert [w.text for w in claim.words][-1] == "rahe."
+    assert [w.text for w in notes.words][0] == "Hum"
+    assert notes.start <= 4.82
+    assert notes.pauses[-1].start == pytest.approx(7.12 - notes.start)
+
+
+def test_leading_silence_is_a_pause_of_the_first_scene():
+    timeline = align(
+        simple_plan("a b"), timed(("a", 0.6, 0.9), ("b", 0.9, 1.2), duration=1.3), fps=30
+    )
+    assert timeline.scenes[0].pauses[0].start == 0.0
+    assert timeline.scenes[0].pauses[0].end == pytest.approx(0.6)

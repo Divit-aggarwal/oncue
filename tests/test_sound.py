@@ -1,9 +1,13 @@
+import re
+import subprocess
+from dataclasses import replace
+
 import pytest
 
 from video_automation import media
 from video_automation.sound import SoundError, mix, resolve_asset, schedule
 from video_automation.spec import Plan, Transcript
-from video_automation.voice import align
+from video_automation.voice import align, to_wav
 
 from conftest import SCENES, ffmpeg, requires_ffmpeg, spoken_words
 
@@ -54,3 +58,48 @@ def test_sound_outside_video_is_moved_inside_and_keeps_requested_time(tmp_path, 
     [sound] = schedule(Plan.model_validate({"scenes": scenes}), tl, [tmp_path])
     assert 0 <= sound.time and sound.time + sound.duration <= tl.duration + 1e-9
     assert sound.requested_time == pytest.approx(tl.scenes[0].duration + offset)
+
+
+def peaks(path):
+    out = subprocess.run(
+        [
+            "ffmpeg",
+            "-hide_banner",
+            "-nostats",
+            "-i",
+            str(path),
+            "-af",
+            "astats=measure_perchannel=Peak_level:measure_overall=none",
+            "-f",
+            "null",
+            "-",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stderr
+    return [float(v) for v in re.findall(r"Peak level dB: (-?[\d.]+)", out)]
+
+
+def test_mono_narration_and_sounds_keep_their_level_in_stereo(tmp_path):
+    ffmpeg(
+        "-f", "lavfi", "-i", "sine=frequency=220:duration=6", "-ac", "1", str(tmp_path / "take.wav")
+    )
+    ffmpeg(
+        "-f",
+        "lavfi",
+        "-i",
+        "sine=frequency=880:duration=0.5",
+        "-ac",
+        "1",
+        str(tmp_path / "tone.wav"),
+    )
+    [source_peak] = peaks(tmp_path / "take.wav")
+    to_wav(tmp_path / "take.wav", tmp_path / "voice.wav", 48000)
+    assert peaks(tmp_path / "voice.wav") == pytest.approx([source_peak] * 2, abs=0.1)
+    tl = timeline()
+    [sound] = schedule(Plan.model_validate({"scenes": SCENES}), tl, [tmp_path])
+    silent = tmp_path / "silence.wav"
+    ffmpeg("-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-t", "6", str(silent))
+    mix(silent, [replace(sound, volume=1.0)], tl.duration, 48000, tmp_path / "mix.wav")
+    assert peaks(tmp_path / "mix.wav") == pytest.approx([source_peak] * 2, abs=0.1)
