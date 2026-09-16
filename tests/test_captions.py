@@ -60,3 +60,8 @@ def test_overlapping_whisper_timestamps_do_not_overlap_captions():
     assert len(captions) == 2
     assert captions[0].end <= captions[1].start
     assert captions[0].end >= captions[0].start
+
+
+def test_words_timestamped_past_the_audio_stay_inside_the_video():
+    captions = segment(make([("a.", 0.0, 1.0), ("b", 2.05, 2.2)], duration=2.0), 40, 0.6)
+    assert all(0 <= c.start <= c.end <= 2.0 for c in captions)

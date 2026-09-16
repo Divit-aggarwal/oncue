@@ -7,10 +7,12 @@ from pydantic import BaseModel
 from . import media
 from .captions import Caption
 from .config import VideoSettings
+from .sound import ScheduledSound
 from .spec import Timeline, Transcript
 from .voice import MIN_MATCH_RATIO
 
 CLIPPING_DB = -0.1
+SHORT_SCENE_SECONDS = 0.5
 DURATION_TOLERANCE = 0.1
 
 
@@ -30,9 +32,21 @@ def check_final(
     transcript: Transcript,
     captions: list[Caption],
     render_reports: dict[str, dict],
+    sounds: list[ScheduledSound],
     video: VideoSettings,
 ) -> Report:
-    report = Report()
+    report = Report(warnings=list(timeline.notes))
+    for scene in timeline.scenes:
+        if scene.duration < SHORT_SCENE_SECONDS:
+            report.warnings.append(
+                f"scene {scene.id} is only {scene.duration:.2f}s long in the recording"
+            )
+    for s in sounds:
+        if abs(s.time - s.requested_time) > 1 / timeline.fps:
+            report.warnings.append(
+                f"scene {s.scene_id}: sound for {s.event!r} requested at "
+                f"{s.requested_time:.2f}s was moved to {s.time:.2f}s to fit the video"
+            )
     try:
         info = media.probe(output)
     except media.MediaError as e:
@@ -78,6 +92,10 @@ def check_final(
         if overrun > 1 / timeline.fps:
             report.warnings.append(
                 f"scene {scene_id} animation runs {overrun:.2f}s past its narration and was cut"
+            )
+        for action in r.get("clamped_events", []):
+            report.warnings.append(
+                f"scene {scene_id}: event {action!r} falls outside the scene and was clamped"
             )
     for a, b in pairwise(captions):
         if b.start < a.end:

@@ -247,7 +247,7 @@ def generate(ep: EpisodeDir, settings: Settings, transcriber: voice.Transcriber)
     )
 
     report = validate.check_final(
-        final, mix_file, timeline, transcript, caption_list, render_reports, video
+        final, mix_file, timeline, transcript, caption_list, render_reports, scheduled, video
     )
     metadata = {
         "episode_id": episode.id,

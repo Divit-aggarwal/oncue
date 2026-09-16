@@ -38,10 +38,13 @@ def segment(transcript: Transcript, max_chars: int, max_gap: float) -> list[Capt
     captions = []
     for i, group in enumerate(groups):
         limit = groups[i + 1][0].start if i + 1 < len(groups) else transcript.duration
-        end = max(min(group[-1].end + HOLD_SECONDS, limit, transcript.duration), group[0].start)
+        end = max(
+            min(group[-1].end + HOLD_SECONDS, limit, transcript.duration),
+            min(group[0].start, transcript.duration),
+        )
         captions.append(
             Caption(
-                start=group[0].start,
+                start=min(group[0].start, transcript.duration),
                 end=end,
                 text=" ".join(w.text for w in group),
             )

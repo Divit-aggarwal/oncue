@@ -43,11 +43,14 @@ def test_sound_at_end_of_video_finishes_at_the_end(tmp_path):
     assert sound.time + sound.duration == pytest.approx(tl.duration)
 
 
-def test_sound_outside_narration_is_rejected(tmp_path):
+@pytest.mark.parametrize("offset", [30.0, -30.0])
+def test_sound_outside_video_is_moved_inside_and_keeps_requested_time(tmp_path, offset):
     ffmpeg("-f", "lavfi", "-i", "sine=frequency=880:duration=0.5", str(tmp_path / "tone.wav"))
     scenes = [
-        dict(SCENES[0], sounds=[{"asset": "tone", "event": "late", "at": "end", "offset": 30}]),
+        dict(SCENES[0], sounds=[{"asset": "tone", "event": "x", "at": "end", "offset": offset}]),
         SCENES[1],
     ]
-    with pytest.raises(SoundError, match="outside"):
-        schedule(Plan.model_validate({"scenes": scenes}), timeline(), [tmp_path])
+    tl = timeline()
+    [sound] = schedule(Plan.model_validate({"scenes": scenes}), tl, [tmp_path])
+    assert 0 <= sound.time and sound.time + sound.duration <= tl.duration + 1e-9
+    assert sound.requested_time == pytest.approx(tl.scenes[0].duration + offset)

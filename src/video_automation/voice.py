@@ -160,30 +160,46 @@ def align(plan: Plan, transcript: Transcript, fps: int) -> Timeline:
         last_matched = matched[-1][1]
         offset += count
 
+    notes: list[str] = []
     total_frames = round(transcript.duration * fps)
+    scene_count = len(plan.scenes)
+    if total_frames < scene_count:
+        raise VoiceError(
+            f"recording is {total_frames} frames long, too short for {scene_count} scenes"
+        )
     boundaries = [0]
-    for idx in first_word[1:]:
+    for i, idx in enumerate(first_word[1:], start=1):
         lead_start = max(words[idx - 1].end, words[idx].start - SCENE_LEAD_SECONDS)
-        boundaries.append(round(lead_start * fps))
+        wanted = round(lead_start * fps)
+        frame = min(max(wanted, boundaries[-1] + 1), total_frames - (scene_count - i))
+        if frame != wanted:
+            notes.append(
+                f"scene {plan.scenes[i].id} start moved from frame {wanted} to {frame} "
+                "to keep every scene at least one frame long"
+            )
+        boundaries.append(frame)
     boundaries.append(total_frames)
 
     scenes = []
     offset = 0
     for i, scene in enumerate(plan.scenes):
         start_frame, end_frame = boundaries[i], boundaries[i + 1]
-        if end_frame <= start_frame:
-            raise VoiceError(f"scene {scene.id} has no duration in the recording")
         start, end = start_frame / fps, end_frame / fps
         scene_tokens = tokens(scene.narration)
         cues = {}
         for name, phrase in scene.cues.items():
             index = find_phrase(scene_tokens, tokens(phrase))
-            candidates = [
-                offset + k for k in range(index, len(scene_tokens)) if offset + k in word_for
-            ]
-            if not candidates:
-                raise VoiceError(f"scene {scene.id}: cue {name!r} not found in the recording")
-            cues[name] = max(0.0, min(words[word_for[candidates[0]]].start, end) - start)
+            after = [offset + k for k in range(index, len(scene_tokens)) if offset + k in word_for]
+            before = [offset + k for k in range(index) if offset + k in word_for]
+            if after:
+                moment = words[word_for[after[0]]].start
+            else:
+                moment = words[word_for[before[-1]]].end if before else start
+                notes.append(
+                    f"scene {scene.id}: cue {name!r} was not recognised in the recording; "
+                    "placed after the last recognised word before it"
+                )
+            cues[name] = min(max(moment, start), end) - start
         offset += len(scene_tokens)
         local = [
             Word(text=w.text, start=w.start - start, end=w.end - start, probability=w.probability)
@@ -213,4 +229,5 @@ def align(plan: Plan, transcript: Transcript, fps: int) -> Timeline:
         frames=total_frames,
         match_ratio=round(match_ratio, 4),
         scenes=scenes,
+        notes=notes,
     )

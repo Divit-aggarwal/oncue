@@ -190,3 +190,4 @@ class Timeline(Model):
     frames: int
     match_ratio: float
     scenes: list[SceneTiming]
+    notes: list[str] = []

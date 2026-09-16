@@ -144,6 +144,14 @@ def run_job(job_path: str) -> None:
         scene = type(class_name, (component,), {"job": job})()
         scene.render()
         movie = Path(scene.renderer.file_writer.movie_file_path)
-        report = {"rendered_seconds": scene.time, "planned_seconds": scene.scene_duration}
+        report = {
+            "rendered_seconds": scene.time,
+            "planned_seconds": scene.scene_duration,
+            "clamped_events": [
+                e["action"]
+                for e in job["events"]
+                if not 0 <= scene.cue(e["at"]) + e["offset"] <= scene.scene_duration
+            ],
+        }
     output.with_suffix(".json").write_text(json.dumps(report))
     movie.replace(output)

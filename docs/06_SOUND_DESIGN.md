@@ -17,7 +17,7 @@
 * Asset lookup: `episodes/<id>/sfx/`, then `assets/sfx/` (configurable `sfx_dirs`). The file extension is optional.
 * Per event: `volume` (default 0.6), optional `duration` trim, `fade_in`, `fade_out`.
 * Mixing uses FFmpeg `amix` without normalization, so the narration level is untouched. QC warns on clipping.
-* A missing asset or an event outside the narration fails generation.
+* A missing asset fails generation. A sound whose requested time does not fit inside the video is moved inside it and reported as a QC warning, matching how animation events are clamped into their scene.
 * Ambience is a long sound event with a `duration`.
 
 No sound assets ship with the engine. The creator curates the library.

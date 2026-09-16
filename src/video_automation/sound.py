@@ -17,6 +17,7 @@ class ScheduledSound:
     event: str
     path: Path
     time: float
+    requested_time: float
     volume: float
     duration: float
     fade_in: float
@@ -40,20 +41,16 @@ def schedule(plan: Plan, timeline: Timeline, search_dirs: list[Path]) -> list[Sc
             info = media.probe(path)
             if not media.streams(info, "audio"):
                 raise SoundError(f"sound asset {path} has no audio stream")
-            time = timing.start + anchors[sound.at] + sound.offset
-            if not 0 <= time <= timeline.duration:
-                raise SoundError(
-                    f"scene {scene.id}: sound {sound.asset!r} starts at {time:.2f}s, "
-                    f"outside the {timeline.duration:.2f}s narration"
-                )
+            requested = timing.start + anchors[sound.at] + sound.offset
             length = min(sound.duration or media.duration(info), timeline.duration)
-            time = min(time, timeline.duration - length)
+            time = min(max(requested, 0.0), timeline.duration - length)
             scheduled.append(
                 ScheduledSound(
                     scene_id=scene.id,
                     event=sound.event,
                     path=path,
                     time=time,
+                    requested_time=requested,
                     volume=sound.volume,
                     duration=length,
                     fade_in=min(sound.fade_in, length),
