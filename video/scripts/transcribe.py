@@ -8,6 +8,7 @@ Without a prompt, Whisper tends to translate Hinglish into English.
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import tempfile
@@ -29,6 +30,26 @@ deep_filter = ROOT / "scripts" / "bin" / "deep-filter"
 if not deep_filter.exists():
     raise SystemExit("deep-filter not found; run scripts/setup-deep-filter.sh")
 
+
+def setting(name: str, default: str) -> str:
+    """Environment variable, else KEY=value from video/.env, else default."""
+    if name in os.environ:
+        return os.environ[name]
+    env_file = ROOT / ".env"
+    lines = env_file.read_text().splitlines() if env_file.exists() else []
+    for line in lines:
+        key, sep, value = line.partition("=")
+        if sep and key.strip() == name:
+            return value.split("#")[0].strip().strip("\"'")
+    return default
+
+
+atten_lim = setting("DEEP_FILTER_ATTEN_LIM", "100")
+try:
+    float(atten_lim)
+except ValueError:
+    raise SystemExit(f"DEEP_FILTER_ATTEN_LIM must be a number of dB, got {atten_lim!r}") from None
+
 # Cleanup chain; the raw recording is only read, never modified:
 # denoise (DeepFilterNet, delay-compensated so timings don't shift) -> highpass 80 Hz
 # -> light compression -> stereo +3 dB mp3 (Revideo renders mono voice about 3 dB quieter).
@@ -39,7 +60,11 @@ with tempfile.TemporaryDirectory() as tmp:
          "-ar", "48000", "-ac", "1", "-c:a", "pcm_s16le", str(wav)],
         check=True,
     )
-    subprocess.run([str(deep_filter), "-D", "-o", f"{tmp}/denoised", str(wav)], check=True, capture_output=True)
+    subprocess.run(
+        [str(deep_filter), "-D", "--atten-lim-db", atten_lim, "-o", f"{tmp}/denoised", str(wav)],
+        check=True,
+        capture_output=True,
+    )
     subprocess.run(
         ["ffmpeg", "-v", "error", "-y", "-i", f"{tmp}/denoised/voice.wav",
          "-af", "highpass=f=80,acompressor=threshold=-18dB:ratio=2,volume=3dB",
@@ -86,6 +111,6 @@ out.write_text(
     )
     + "\n"
 )
-print(f"{audio.relative_to(ROOT)}  peak {peak} dB")
+print(f"{audio.relative_to(ROOT)}  peak {peak} dB, denoise atten limit {atten_lim} dB")
 print(f"{out.relative_to(ROOT)}  {len(words)} words, {info.duration:.2f}s, prompt={'yes' if prompt else 'no'}")
 print(" ".join(f"[{w['start']:.2f}]{w['text']}" for w in words))

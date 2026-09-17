@@ -20,7 +20,7 @@ Alternatives are offered where useful. The creator edits the file and approves i
 
 ## Production Planning (before Gate B)
 
-From the approved proposal, the assistant writes `plan.json`: scenes, the exact narration per scene, cues, animation events, visual component references, sound events and caption settings (see `04_VIDEO_SPECIFICATION.md`). Visual components are existing approved components or clearly temporary placeholders. The creator approves or requests changes.
+From the approved proposal, the assistant writes `plan.json`: scenes, the exact narration per scene, cues, animation events, visual component references, sound events and caption settings (see `../legacy_manim/docs/04_VIDEO_SPECIFICATION.md`). Visual components are existing approved components or clearly temporary placeholders. The creator approves or requests changes.
 
 ## Production (after Gate B)
 

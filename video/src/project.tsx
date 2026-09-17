@@ -22,7 +22,8 @@ const main = makeScene2D('main', function* (view) {
 
 export default makeProject({
   scenes: [main],
-  variables: {slug: ''},
+  // Preview a reel with: VITE_SLUG=<slug> npm run preview (render passes the slug itself).
+  variables: {slug: import.meta.env.VITE_SLUG ?? ''},
   settings: {
     shared: {size: {x: size.width, y: size.height}, background: colors.bg},
     rendering: {fps: 30},

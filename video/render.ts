@@ -1,5 +1,5 @@
 import {execFileSync, spawnSync} from 'node:child_process';
-import {existsSync, renameSync} from 'node:fs';
+import {existsSync, readFileSync, renameSync} from 'node:fs';
 import {renderVideo} from '@revideo/renderer';
 
 const slug = process.argv[2];
@@ -60,3 +60,37 @@ console.log(`streams:  ${probe(['-show_entries', 'stream=codec_type']).split('\n
 console.log(`duration: ${Number(probe(['-show_entries', 'format=duration'])).toFixed(2)}s`);
 console.log(`loudness: ${before} LUFS${normalization ? ` -> ${lufs()} LUFS (two-pass loudnorm, ${normalization})` : ''}`);
 console.log(`size:     ${(Number(probe(['-show_entries', 'format=size'])) / 1e6).toFixed(2)} MB`);
+
+// Step 4 checks: flag a duration outside 30–60s and any beat whose visual starts >0.3s after its first word.
+// A beat's visual start is the first frame at or after its word where the picture gets brighter
+// (everything is light on a dark background); this reads ~1 frame late because a fade starts at opacity 0.
+const FPS = 30;
+const seconds = Number(probe(['-show_entries', 'format=duration']));
+if (seconds < 30 || seconds > 60) console.warn(`FLAG: duration ${seconds.toFixed(2)}s is outside 30–60s`);
+
+const storyboard = `../storyboards/${slug}.md`;
+if (existsSync(storyboard)) {
+  const tokens = (s: string) =>
+    s.toLowerCase().split(/\s+/).map(t => t.replace(/^[\p{P}\p{S}।॥]+|[\p{P}\p{S}।॥]+$/gu, '')).filter(Boolean);
+  const words: {text: string; start: number}[] = JSON.parse(readFileSync(`./timings/${slug}.json`, 'utf8')).words;
+  const spoken = words.flatMap(w => tokens(w.text).map(t => ({t, start: w.start})));
+  const says = [...readFileSync(storyboard, 'utf8').matchAll(/\*\*Say:\*\*\s*(.+)/g)].map(m => m[1]);
+  const stats = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-vf', 'signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=-', '-f', 'null', '-'],
+    {encoding: 'utf8', maxBuffer: 256 * 1024 * 1024}).stdout;
+  const brightness = [...stats.matchAll(/YAVG=([\d.]+)/g)].map(m => Number(m[1]));
+  let cursor = 0;
+  says.forEach((say, i) => {
+    const needle = tokens(say).slice(0, 3);
+    let k = cursor;
+    while (k + needle.length <= spoken.length && !needle.every((t, j) => spoken[k + j].t === t)) k++;
+    if (k + needle.length > spoken.length) return console.warn(`FLAG: beat ${i + 1} "${needle.join(' ')}" not found in timings`);
+    cursor = k + needle.length;
+    const word = spoken[k].start;
+    let f = Math.max(1, Math.floor(word * FPS) - 1);
+    while (f < brightness.length && !(brightness[f] > brightness[f - 1] + 0.001)) f++;
+    const lag = f / FPS - word;
+    console.log(`beat ${i + 1}:   word ${word.toFixed(2)}s, visual ${(f / FPS).toFixed(2)}s, lag ${lag >= 0 ? '+' : ''}${lag.toFixed(3)}s${lag > 0.3 ? '  FLAG: more than 0.3s late' : ''}`);
+  });
+} else {
+  console.warn(`no ${storyboard}; skipped the beat sync check`);
+}

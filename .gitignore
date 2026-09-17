@@ -29,3 +29,4 @@ episodes/*/.lock
 node_modules/
 video/output/
 video/scripts/bin/
+!.env.example
