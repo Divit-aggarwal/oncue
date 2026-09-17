@@ -27,7 +27,7 @@ Reels are 30–60s vertical explainers (1080×1920, 30 fps) animated in Revideo 
 ## Folder layout
 
 ```text
-explainer-reels/
+oncue/
   CLAUDE.md, README.md
   pyproject.toml, uv.lock   Python deps: faster-whisper only (own .venv via uv sync)
   docs/                     project docs + COMPONENTS.md

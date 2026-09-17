@@ -1,5 +1,5 @@
 [project]
-name = "explainer-reels"
+name = "oncue"
 version = "0.1.0"
 description = "Voice-synced vertical explainer reels rendered with Revideo"
 readme = "README.md"
