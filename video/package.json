@@ -15,7 +15,7 @@
     "@revideo/cli": "0.11.0",
     "@revideo/ui": "0.11.0",
     "typescript": "5.5.4",
-    "vite": "^4.5"
+    "vite": "4.5.14"
   },
   "type": "module"
 }
