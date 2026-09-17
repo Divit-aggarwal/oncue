@@ -12,6 +12,7 @@ Local-first pipeline for 30–60 second vertical explainer reels, animated in co
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](pyproject.toml)
 [![faster-whisper](https://img.shields.io/badge/faster--whisper-word%20timestamps-4FC3D9)](https://github.com/SYSTRAN/faster-whisper)
 [![Local-first](https://img.shields.io/badge/cloud%20services-none-4CC38A)](#how-it-works)
+[![License: MIT](https://img.shields.io/badge/license-MIT-F5F5F7)](LICENSE)
 
 <img src="docs/assets/preview.png" alt="Four frames from a rendered oncue reel explaining RAG: a RAG headline, a notes box beside an LLM box, and a Retriever → relevant docs → LLM → answer flow" width="100%">
 
@@ -270,3 +271,7 @@ oncue is built to be driven by a coding assistant under the creator's direction.
 - [DeepFilterNet](https://github.com/Rikorose/DeepFilterNet): speech enhancement
 - [FFmpeg](https://ffmpeg.org): audio processing and loudness normalization
 - [Inter](https://rsms.me/inter/): typeface, SIL Open Font License ([license](video/public/fonts/Inter-LICENSE.txt))
+
+## License
+
+[MIT](LICENSE) © 2026 Divit Aggarwal. Inter is bundled under the SIL Open Font License.

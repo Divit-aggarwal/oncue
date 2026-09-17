@@ -3,6 +3,7 @@ name = "oncue"
 version = "0.1.0"
 description = "Voice-synced vertical explainer reels rendered with Revideo"
 readme = "README.md"
+license = "MIT"
 authors = [
     { name = "divit aggarwal", email = "theagihustler@gmail.com" }
 ]

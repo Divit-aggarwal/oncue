@@ -28,7 +28,7 @@ Reels are 30–60s vertical explainers (1080×1920, 30 fps) animated in Revideo 
 
 ```text
 oncue/
-  CLAUDE.md, README.md
+  CLAUDE.md, README.md, LICENSE
   pyproject.toml, uv.lock   Python deps: faster-whisper only (own .venv via uv sync)
   docs/                     project docs + COMPONENTS.md
   docs/assets/preview.png   README preview strip, frames from output/smoke_take1.mp4
