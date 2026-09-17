@@ -1,4 +1,4 @@
-import {Layout, type Node} from '@revideo/2d';
+import {Layout} from '@revideo/2d';
 import {all} from '@revideo/core';
 import {safeArea, space} from '../lib/theme';
 import {draw, fadeIn, place} from '../motions';
@@ -25,5 +25,5 @@ export function FlowStep({labels, width = 520}: {labels: string[]; width?: numbe
       yield* all(fadeIn(boxes[shown]), ...(shown > 0 ? [draw(arrows[shown - 1])] : []));
     }
   }
-  return {node: node as Node, boxes, reveal};
+  return {boxes, reveal};
 }

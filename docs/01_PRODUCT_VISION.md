@@ -9,7 +9,7 @@ Make the creator faster at producing technically accurate, entertaining, recogni
 ## Principles
 
 * The creator is the director and final authority. The system handles complexity and repetition.
-* Human approval at the creative gate and the production gate.
+* Human approval at the storyboard gate.
 * The creator's recorded delivery drives the timeline.
 * Local-first, inexpensive to operate, and reproducible.
 * Technical correctness comes before comedy. Analogies may simplify but must not misrepresent the concept.

@@ -63,7 +63,7 @@ A vertical chain of `ConceptBox`es joined by `Arrow`s, centred in the safe area.
 | `labels` | string[] | required |
 | `width` | number | 520 (all boxes the same width) |
 
-Returns `{node, boxes, reveal}`.
+Returns `{boxes, reveal}`.
 
 ```tsx
 const flow = FlowStep({labels: ['Retriever', 'relevant docs', 'LLM', 'answer']});

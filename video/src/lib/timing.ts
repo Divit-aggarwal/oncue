@@ -17,7 +17,7 @@ const files = import.meta.glob<Timings>('../../timings/*.json', {
 });
 
 // Lowercase and strip punctuation (including Devanagari danda) so "Token," matches "token".
-export function tokens(text: string): string[] {
+function tokens(text: string): string[] {
   return text
     .toLowerCase()
     .split(/\s+/)

@@ -1,17 +1,6 @@
 __pycache__/
 *.py[oc]
 .venv
-.pytest_cache/
-.ruff_cache/
-media/
-episodes/*/voice/
-episodes/*/build/*
-!episodes/*/build/transcript.json
-!episodes/*/build/timeline.json
-episodes/*/output/*
-!episodes/*/output/final.json
-!episodes/*/output/final.srt
-episodes/*/.lock
 *.wav
 *.aiff
 *.m4a
@@ -25,7 +14,6 @@ episodes/*/.lock
 *.mov
 .env
 .env.*
-!assets/**
 node_modules/
 video/output/
 video/scripts/bin/

@@ -1,7 +1,7 @@
 [project]
-name = "video-automation"
+name = "explainer-reels"
 version = "0.1.0"
-description = "Local-first production engine for creator-directed animated explainer videos"
+description = "Voice-synced vertical explainer reels rendered with Revideo"
 readme = "README.md"
 authors = [
     { name = "divit aggarwal", email = "theagihustler@gmail.com" }

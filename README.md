@@ -129,7 +129,6 @@ video/src/lib/                 theme.ts (all visual values), timing.ts (phrase -
 video/timings/<slug>.json      word timings (tracked)
 video/public/audio/            cleaned voiceovers (git-ignored)
 video/output/                  rendered reels (git-ignored)
-legacy_manim/                  the retired Manim engine, kept for reference
 ```
 
 ## Troubleshooting

@@ -88,7 +88,7 @@ from faster_whisper import WhisperModel  # noqa: E402  (slow import, after cheap
 model = WhisperModel(args.model, device="auto", compute_type="int8")
 segments, info = model.transcribe(
     str(audio),
-    language="en",  # "en" + prompt keeps Roman Hinglish (see docs/07)
+    language="en",  # "en" + prompt keeps Roman Hinglish (see CLAUDE.md known issues)
     task="transcribe",
     word_timestamps=True,
     vad_filter=False,

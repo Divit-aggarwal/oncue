@@ -22,7 +22,7 @@ Your job is to:
 
 # 0. CURRENT PIPELINE (Revideo)
 
-Reels are 30–60s vertical explainers (1080×1920, 30 fps) animated in Revideo 0.11 to the creator's recorded voiceover. The old Manim engine is retired and kept, unchanged, in `legacy_manim/`.
+Reels are 30–60s vertical explainers (1080×1920, 30 fps) animated in Revideo 0.11 to the creator's recorded voiceover.
 
 ## Folder layout
 
@@ -32,7 +32,6 @@ explainer-reels/
   pyproject.toml, uv.lock   Python deps: faster-whisper only (own .venv via uv sync)
   docs/                     project docs + COMPONENTS.md
   storyboards/<slug>.md     one storyboard per reel (creator approves these)
-  legacy_manim/             retired Manim engine, tests, docs 02/04/08, old renders
   video/                    the Revideo project; run every command below from here
     package.json            npm scripts: preview, render
     render.ts               render + audio check + loudnorm + Step 4 checks
@@ -93,6 +92,10 @@ git add <the files you changed, listed explicitly>   # never git add -A; never p
 
 Files per reel to commit: `storyboards/<slug>.md`, `video/src/scenes/<slug>.tsx`, `video/timings/<slug>.json`. Audio and MP4 are git-ignored.
 
+## Regression test
+
+Any change to `video/src/components/`, `video/src/motions/`, `video/scripts/transcribe.py` or `video/render.ts` must re-render smoke_take1 (`npm run render -- smoke_take1`) and confirm the sync table (beat lags +0.067 / +0.067 / +0.027) and -15.9 LUFS after loudnorm.
+
 ## Preview and render
 
 * `VITE_SLUG=<slug> npm run preview` opens the Revideo editor at http://localhost:9000 for that reel. Without `VITE_SLUG` the editor shows an error, because no scene is selected.
@@ -107,9 +110,7 @@ Raw recording (never modified) → 48 kHz mono WAV → DeepFilterNet `deep-filte
 
 * Revideo 0.11 has no `waitUntil` (Motion Canvas's editor-marker version was removed). `lib/timing.ts` provides `waitUntil(seconds)`.
 * `absolutePosition` cannot be set as a JSX prop; `Highlight` converts world position with `transformVectorAsPoint`.
-* `npm init @revideo` ignores piped answers and has no TypeScript prompt (all templates are TypeScript). It was run with `expect`.
 * Revideo sends telemetry unless `DISABLE_TELEMETRY=true`.
-* The template compiled `render.ts` with `tsc` to CommonJS; that is replaced by Node 26 running `render.ts` directly (`"type": "module"`). `tsc` is typecheck only.
 * The headless browser has no Inter; `project.tsx` loads `public/fonts/InterVariable.woff2` with `FontFace` before the first frame. A missing font would silently fall back to Times.
 * Whisper without the storyboard prompt translates Hinglish to English. Transcribe only after the storyboard exists.
 * Whisper word end times can stretch into room noise; only start times drive visuals.
@@ -117,8 +118,6 @@ Raw recording (never modified) → 48 kHz mono WAV → DeepFilterNet `deep-filte
 * `deep-filter` v0.5.6 (2023) publishes no checksums; the hashes in `setup-deep-filter.sh` were recorded on first download (2026-09-17). Its output is ~30 ms shorter than the input (trimmed at the end).
 * The beat lag check detects the first frame that gets brighter after the word, so it reads about one frame late and assumes light visuals on the dark background.
 * `npm install` reports 4 vulnerabilities (2 moderate, 2 high) in Revideo's dependency tree. Left alone by creator decision; do not run `npm audit fix`.
-* Not ported from the Manim engine: burned-in captions, SFX mixing, QC validator, the proposal/plan state machine, and the canonical `interview_v1` characters (a Revideo version would be `interview_v2`).
-* `docs/03`, `06` and `07` still describe parts of the Manim implementation (CLI commands, caption and SFX mixing).
 
 ---
 
@@ -129,16 +128,10 @@ Before making architectural changes, read:
 ```text
 README.md
 docs/01_PRODUCT_VISION.md
-docs/03_CREATIVE_WORKFLOW.md
 docs/05_VOICE_AND_TIMING.md
-docs/06_SOUND_DESIGN.md
-docs/07_LANGUAGE_AND_LOCALIZATION.md
-docs/09_APPROVAL_AND_GENERATION_PROTOCOL.md
 docs/10_FUTURE_AUTOMATION.md
 docs/COMPONENTS.md
 ```
-
-`legacy_manim/docs/` (02, 04, 08) describes the retired Manim engine. Read it only when working on legacy code.
 
 These documents define the project architecture.
 
@@ -199,17 +192,15 @@ Never assume approval.
 The workflow contains:
 
 ```text
-Creative Proposal
-        ↓
-Creator Approval
-        ↓
-Production Plan
-        ↓
-Creator Approval
+Storyboard Approval
         ↓
 Voice
         ↓
-Generation
+Transcribe
+        ↓
+Render
+        ↓
+Creator Review
 ```
 
 If approval has not been explicitly given, do not treat the phase as approved.
