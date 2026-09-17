@@ -9,32 +9,4 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "faster-whisper>=1.2.1",
-    "manim>=0.21.0",
-    "pydantic>=2.13.5",
 ]
-
-[project.scripts]
-video-automation = "video_automation:main"
-
-[build-system]
-requires = ["uv_build>=0.12.9,<0.13.0"]
-build-backend = "uv_build"
-
-[dependency-groups]
-dev = [
-    "pytest>=9.1.1",
-    "ruff>=0.16.8",
-]
-
-[tool.ruff]
-line-length = 100
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-markers = ["media: runs real manim/ffmpeg renders", "whisper: runs a real whisper model"]
-
-[tool.ruff.lint.isort]
-known-local-folder = ["conftest"]

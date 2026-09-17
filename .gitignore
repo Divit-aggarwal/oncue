@@ -26,3 +26,5 @@ episodes/*/.lock
 .env
 .env.*
 !assets/**
+node_modules/
+video/output/
