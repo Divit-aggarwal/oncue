@@ -1,4 +1,4 @@
-import {execFileSync} from 'node:child_process';
+import {execFileSync, spawnSync} from 'node:child_process';
 import {existsSync, renameSync} from 'node:fs';
 import {renderVideo} from '@revideo/renderer';
 
@@ -27,7 +27,22 @@ if (!probe(['-select_streams', 'a', '-show_entries', 'stream=codec_name'])) {
   renameSync(tmp, file);
 }
 
+// Integrated loudness (LUFS) from ffmpeg's ebur128 summary, which is printed on stderr.
+const lufs = () => {
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'ebur128', '-f', 'null', '-'], {encoding: 'utf8'});
+  return Number(r.stderr.match(/Summary:[\s\S]*?I:\s+(-?[\d.]+) LUFS/)![1]);
+};
+const before = lufs();
+if (before < -18) {
+  // ponytail: single-pass loudnorm (dynamic); switch to two-pass if it audibly flattens delivery.
+  const tmp = file.replace(/\.mp4$/, '.loud.mp4');
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', file, '-map', '0:v', '-map', '0:a', '-c:v', 'copy',
+    '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', tmp]);
+  renameSync(tmp, file);
+}
+
 console.log(`output:   ${file}`);
 console.log(`streams:  ${probe(['-show_entries', 'stream=codec_type']).split('\n').join(', ')}`);
 console.log(`duration: ${Number(probe(['-show_entries', 'format=duration'])).toFixed(2)}s`);
+console.log(`loudness: ${before} LUFS${before < -18 ? ` -> ${lufs()} LUFS (loudnorm I=-16)` : ''}`);
 console.log(`size:     ${(Number(probe(['-show_entries', 'format=size'])) / 1e6).toFixed(2)} MB`);

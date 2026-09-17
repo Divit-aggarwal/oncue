@@ -1,0 +1,147 @@
+{
+  "model": "small",
+  "prompt": "Basically RAG mein model ko dobara train nahi kar rahe. Hum bas model ko notes de rahe hain. Retriever relevant documents dhoondta hai, aur LLM answer likhta hai.",
+  "duration": 12.053,
+  "words": [
+    {
+      "text": "Basically",
+      "start": 0.0,
+      "end": 1.18
+    },
+    {
+      "text": "RAG",
+      "start": 1.18,
+      "end": 1.68
+    },
+    {
+      "text": "mein",
+      "start": 1.68,
+      "end": 1.92
+    },
+    {
+      "text": "model",
+      "start": 1.92,
+      "end": 2.7
+    },
+    {
+      "text": "ko",
+      "start": 2.7,
+      "end": 2.9
+    },
+    {
+      "text": "dobara",
+      "start": 2.9,
+      "end": 3.16
+    },
+    {
+      "text": "train",
+      "start": 3.16,
+      "end": 3.48
+    },
+    {
+      "text": "nahi",
+      "start": 3.48,
+      "end": 3.78
+    },
+    {
+      "text": "kar",
+      "start": 3.78,
+      "end": 3.94
+    },
+    {
+      "text": "rahe.",
+      "start": 3.94,
+      "end": 4.82
+    },
+    {
+      "text": "Hum",
+      "start": 4.82,
+      "end": 5.0
+    },
+    {
+      "text": "bas",
+      "start": 5.0,
+      "end": 5.16
+    },
+    {
+      "text": "model",
+      "start": 5.16,
+      "end": 5.5
+    },
+    {
+      "text": "ko",
+      "start": 5.5,
+      "end": 5.66
+    },
+    {
+      "text": "notes",
+      "start": 5.66,
+      "end": 6.02
+    },
+    {
+      "text": "de",
+      "start": 6.02,
+      "end": 6.24
+    },
+    {
+      "text": "rahe",
+      "start": 6.24,
+      "end": 6.56
+    },
+    {
+      "text": "hain.",
+      "start": 6.56,
+      "end": 7.12
+    },
+    {
+      "text": "Retriever",
+      "start": 7.64,
+      "end": 8.28
+    },
+    {
+      "text": "relevant",
+      "start": 8.28,
+      "end": 8.6
+    },
+    {
+      "text": "documents",
+      "start": 8.6,
+      "end": 9.22
+    },
+    {
+      "text": "dhoondta",
+      "start": 9.22,
+      "end": 9.76
+    },
+    {
+      "text": "hai,",
+      "start": 9.76,
+      "end": 9.92
+    },
+    {
+      "text": "aur",
+      "start": 10.26,
+      "end": 10.34
+    },
+    {
+      "text": "LLM",
+      "start": 10.34,
+      "end": 10.78
+    },
+    {
+      "text": "answer",
+      "start": 10.78,
+      "end": 11.08
+    },
+    {
+      "text": "likhta",
+      "start": 11.08,
+      "end": 11.52
+    },
+    {
+      "text": "hai.",
+      "start": 11.52,
+      "end": 11.6
+    }
+  ]
+}
