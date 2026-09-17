@@ -28,3 +28,4 @@ episodes/*/.lock
 !assets/**
 node_modules/
 video/output/
+video/scripts/bin/

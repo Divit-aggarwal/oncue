@@ -10,6 +10,7 @@ import argparse
 import json
 import re
 import subprocess
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,12 +25,27 @@ audio = ROOT / "public" / "audio" / f"{args.slug}.mp3"
 audio.parent.mkdir(parents=True, exist_ok=True)
 if args.recording.resolve() == audio:
     raise SystemExit(f"recording must not be {audio}; it is overwritten by the conversion")
-# Standard conversion: stereo, +3 dB (Revideo renders mono voice about 3 dB quieter).
-subprocess.run(
-    ["ffmpeg", "-v", "error", "-y", "-i", str(args.recording), "-vn",
-     "-ac", "2", "-af", "volume=3dB", "-c:a", "libmp3lame", "-q:a", "2", str(audio)],
-    check=True,
-)
+deep_filter = ROOT / "scripts" / "bin" / "deep-filter"
+if not deep_filter.exists():
+    raise SystemExit("deep-filter not found; run scripts/setup-deep-filter.sh")
+
+# Cleanup chain; the raw recording is only read, never modified:
+# denoise (DeepFilterNet, delay-compensated so timings don't shift) -> highpass 80 Hz
+# -> light compression -> stereo +3 dB mp3 (Revideo renders mono voice about 3 dB quieter).
+with tempfile.TemporaryDirectory() as tmp:
+    wav = Path(tmp) / "voice.wav"
+    subprocess.run(
+        ["ffmpeg", "-v", "error", "-y", "-i", str(args.recording), "-vn",
+         "-ar", "48000", "-ac", "1", "-c:a", "pcm_s16le", str(wav)],
+        check=True,
+    )
+    subprocess.run([str(deep_filter), "-D", "-o", f"{tmp}/denoised", str(wav)], check=True, capture_output=True)
+    subprocess.run(
+        ["ffmpeg", "-v", "error", "-y", "-i", f"{tmp}/denoised/voice.wav",
+         "-af", "highpass=f=80,acompressor=threshold=-18dB:ratio=2,volume=3dB",
+         "-ac", "2", "-c:a", "libmp3lame", "-q:a", "2", str(audio)],
+        check=True,
+    )
 stats = subprocess.run(
     ["ffmpeg", "-hide_banner", "-nostats", "-i", str(audio), "-af", "volumedetect", "-f", "null", "-"],
     capture_output=True, text=True, check=True,

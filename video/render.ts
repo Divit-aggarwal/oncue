@@ -32,17 +32,31 @@ const lufs = () => {
   const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'ebur128', '-f', 'null', '-'], {encoding: 'utf8'});
   return Number(r.stderr.match(/Summary:[\s\S]*?I:\s+(-?[\d.]+) LUFS/)![1]);
 };
+// loudnorm prints its JSON report as the last {...} block on stderr.
+const loudnorm = (filter: string, out: string[]) => {
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', `${filter}:print_format=json`, ...out], {encoding: 'utf8'});
+  if (r.status !== 0) throw new Error(`loudnorm failed:\n${r.stderr.slice(-1000)}`);
+  return JSON.parse(r.stderr.slice(r.stderr.lastIndexOf('{'), r.stderr.lastIndexOf('}') + 1));
+};
+const target = 'loudnorm=I=-16:TP=-1.5:LRA=11';
 const before = lufs();
+let normalization = '';
 if (before < -18) {
-  // ponytail: single-pass loudnorm (dynamic); switch to two-pass if it audibly flattens delivery.
+  // Two-pass: measure, then apply with the measured values so the gain is linear where possible.
+  const m = loudnorm(target, ['-f', 'null', '-']);
   const tmp = file.replace(/\.mp4$/, '.loud.mp4');
-  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', file, '-map', '0:v', '-map', '0:a', '-c:v', 'copy',
-    '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', tmp]);
+  const applied = loudnorm(
+    `${target}:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}` +
+      `:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`,
+    ['-map', '0:v', '-map', '0:a', '-c:v', 'copy', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-y', tmp],
+  );
   renameSync(tmp, file);
+  // ffmpeg silently falls back to dynamic when linear gain would break the true-peak limit.
+  normalization = applied.normalization_type;
 }
 
 console.log(`output:   ${file}`);
 console.log(`streams:  ${probe(['-show_entries', 'stream=codec_type']).split('\n').join(', ')}`);
 console.log(`duration: ${Number(probe(['-show_entries', 'format=duration'])).toFixed(2)}s`);
-console.log(`loudness: ${before} LUFS${before < -18 ? ` -> ${lufs()} LUFS (loudnorm I=-16)` : ''}`);
+console.log(`loudness: ${before} LUFS${normalization ? ` -> ${lufs()} LUFS (two-pass loudnorm, ${normalization})` : ''}`);
 console.log(`size:     ${(Number(probe(['-show_entries', 'format=size'])) / 1e6).toFixed(2)} MB`);
