@@ -5,7 +5,6 @@ import {draw, fadeIn, place} from '../motions';
 import {Arrow} from './Arrow';
 import {ConceptBox} from './ConceptBox';
 
-// A vertical chain of boxes joined by arrows, centred in the safe area.
 // `reveal(n)` shows the next n steps (arrow, then box), so a chain can be revealed across several words.
 export function FlowStep({labels, width = 520}: {labels: string[]; width?: number}) {
   const boxes = labels.map(label => <ConceptBox label={label} width={width} opacity={0} />);

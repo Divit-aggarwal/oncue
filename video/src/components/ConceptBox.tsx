@@ -7,7 +7,6 @@ export interface ConceptBoxProps extends RectProps {
   variant?: 'default' | 'accent' | 'accent2';
 }
 
-// A labelled box for one concept (LLM, Retriever, notes...). Sizes to its text unless width is set.
 export function ConceptBox({label, sublabel, variant = 'default', ...rest}: ConceptBoxProps) {
   const color = variant === 'default' ? colors.text : colors[variant];
   return (

@@ -32,7 +32,6 @@ if not deep_filter.exists():
 
 
 def setting(name: str, default: str) -> str:
-    """Environment variable, else KEY=value from video/.env, else default."""
     if name in os.environ:
         return os.environ[name]
     env_file = ROOT / ".env"

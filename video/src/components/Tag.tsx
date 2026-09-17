@@ -6,7 +6,6 @@ export interface TagProps extends RectProps {
   color?: string;
 }
 
-// A small pill caption, e.g. "extra context in the prompt".
 export function Tag({text, color = colors.muted, ...rest}: TagProps) {
   return (
     <Rect layout padding={[space.xs, space.sm]} radius={999} stroke={color} lineWidth={stroke} {...rest}>

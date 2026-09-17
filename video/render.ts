@@ -61,7 +61,6 @@ console.log(`duration: ${Number(probe(['-show_entries', 'format=duration'])).toF
 console.log(`loudness: ${before} LUFS${normalization ? ` -> ${lufs()} LUFS (two-pass loudnorm, ${normalization})` : ''}`);
 console.log(`size:     ${(Number(probe(['-show_entries', 'format=size'])) / 1e6).toFixed(2)} MB`);
 
-// Step 4 checks: flag a duration outside 30–60s and any beat whose visual starts >0.3s after its first word.
 // A beat's visual start is the first frame at or after its word where the picture gets brighter
 // (everything is light on a dark background); this reads ~1 frame late because a fade starts at opacity 0.
 const FPS = 30;

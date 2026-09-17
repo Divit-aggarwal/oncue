@@ -62,7 +62,7 @@ explainer-reels/
    * Each beat: `yield* clearScene(startOf('<first words>'))` (the screen is empty exactly on the word), then components and motions, then `yield* waitUntil(startOf('<later words>'))` for moments inside the beat. End with `yield* waitUntil(timings.duration)`.
    * All timing comes from `timings/<slug>.json`. Never hardcode guessed durations.
    * One idea on screen at a time. Only components and motions (`docs/COMPONENTS.md`); no raw `.opacity()` or other animation calls, no images unless the creator supplies them.
-   * Every animation call gets a one-line plain-English comment.
+   * One `// Beat N: <sentence>` comment per beat. No per-animation comments: component and motion names carry that meaning. Comment only a non-obvious why, a Revideo quirk, a unit or coordinate convention, or an invariant.
 4. **Render.** `npm run render -- <slug>`. Report output path, duration, size, loudness and the per-beat lag lines; mention every `FLAG:` line (duration outside 30–60s, beat more than 0.3s late). Extract a few frames with ffmpeg and look at them.
 5. **Review.** Ask the creator to review. Feedback arrives as `beat N: ...`; edit only that beat, re-render, report again.
 

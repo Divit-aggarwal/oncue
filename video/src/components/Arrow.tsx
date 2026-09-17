@@ -7,7 +7,6 @@ export interface ArrowProps extends Omit<LineProps, 'points'> {
 }
 
 // An arrow from one node's edge to another's, undrawn until draw(). Both nodes must share a parent.
-// Joins the facing edges (stacked: bottom/top, side by side: right/left) and follows the nodes if they move.
 export function Arrow({from, to, ...rest}: ArrowProps) {
   const a = from as Layout;
   const b = to as Layout;

@@ -1,5 +1,4 @@
 #!/bin/sh
-# Downloads the DeepFilterNet `deep-filter` CLI (CPU, no Python/torch) into scripts/bin/ and verifies its sha256.
 # The release publishes no checksums; these were recorded on first download (2026-09-17).
 # To support another platform, download its asset once, check it runs, and add its hash below.
 set -eu

@@ -1,6 +1,4 @@
 #!/bin/sh
-# Creates the files for a new reel: storyboards/<slug>.md, video/src/scenes/<slug>.tsx, video/public/audio/.
-# usage: scripts/new-reel.sh <slug>     (slug: lowercase letters, digits, - and _)
 set -eu
 
 SLUG="${1:-}"
@@ -63,20 +61,19 @@ import {loadTimings, waitUntil} from '../lib/timing';
 export default function* (view: View2D) {
   const {timings, startOf} = loadTimings('$SLUG');
   const y = safeArea.centerY;
-  yield view.add(<Audio src={'/audio/$SLUG.mp3'} play />); // start the voiceover once it is ready
-  // Beat 1: TODO sentence. Clear the screen on its first word.
+  yield view.add(<Audio src={'/audio/$SLUG.mp3'} play />); // yielded: Revideo warns if the audio node is used before it is ready
+  // Beat 1: TODO sentence
   yield* clearScene(startOf('TODO first words'));
-  // TODO animate beat 1 (one comment per animation call)
-  // Beat 2: TODO sentence. Clear beat 1 so the screen is empty on its first word.
+  // TODO animate beat 1
+  // Beat 2: TODO sentence
   yield* clearScene(startOf('TODO first words'));
   // TODO animate beat 2
-  // Beat 3: TODO sentence. Clear beat 2 first.
+  // Beat 3: TODO sentence
   yield* clearScene(startOf('TODO first words'));
   // TODO animate beat 3
-  // Beat 4: TODO sentence. Clear beat 3 first.
+  // Beat 4: TODO sentence
   yield* clearScene(startOf('TODO first words'));
   // TODO animate beat 4
-  // Hold the last beat until the voiceover ends.
   yield* waitUntil(timings.duration);
 }
 EOF
