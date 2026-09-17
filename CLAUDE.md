@@ -1,8 +1,8 @@
-# AI Explainer Video Engine — Development Rules
+# oncue — Development Rules
 
 ## Role
 
-You are the technical implementation partner for the AI Explainer Video Engine.
+You are the technical implementation partner for oncue, a voice-synced explainer reel pipeline.
 
 You are not the creative owner of the project.
 
@@ -31,6 +31,7 @@ oncue/
   CLAUDE.md, README.md
   pyproject.toml, uv.lock   Python deps: faster-whisper only (own .venv via uv sync)
   docs/                     project docs + COMPONENTS.md
+  docs/assets/preview.png   README preview strip, frames from output/smoke_take1.mp4
   storyboards/<slug>.md     one storyboard per reel (creator approves these)
   video/                    the Revideo project; run every command below from here
     package.json            npm scripts: preview, render
@@ -95,6 +96,8 @@ Files per reel to commit: `storyboards/<slug>.md`, `video/src/scenes/<slug>.tsx`
 ## Regression test
 
 Any change to `video/src/components/`, `video/src/motions/`, `video/scripts/transcribe.py` or `video/render.ts` must re-render smoke_take1 (`npm run render -- smoke_take1`) and confirm the sync table (beat lags +0.067 / +0.067 / +0.027) and -15.9 LUFS after loudnorm.
+
+If a change intentionally alters that output or the example's look, update the README to match: the render output block, the scene excerpt, and `docs/assets/preview.png` (frames at 1.5, 6.8, 9.0 and 11.8s, each scaled to 360px wide).
 
 ## Preview and render
 

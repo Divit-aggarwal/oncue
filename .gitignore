@@ -18,3 +18,4 @@ node_modules/
 video/output/
 video/scripts/bin/
 !.env.example
+.DS_Store
