@@ -95,8 +95,9 @@ The architecture remains model-agnostic: the production engine is plain files (s
 Requirements: Node ≥ 18 (developed on 26), FFmpeg on `PATH` (`brew install ffmpeg`), [uv](https://docs.astral.sh/uv/).
 
 ```bash
+uv sync                          # repo root: creates .venv with faster-whisper
 cd video
-npm install
+npm ci                           # exact versions from package-lock.json
 scripts/setup-deep-filter.sh     # downloads the denoiser into scripts/bin/ and checks its sha256
 cp .env.example .env             # optional: DEEP_FILTER_ATTEN_LIM
 ```

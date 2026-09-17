@@ -27,9 +27,9 @@ Reels are 30–60s vertical explainers (1080×1920, 30 fps) animated in Revideo 
 ## Folder layout
 
 ```text
-Video_automation/
+explainer-reels/
   CLAUDE.md, README.md
-  pyproject.toml            Python deps: faster-whisper only (uv workspace member of ../pyproject.toml)
+  pyproject.toml, uv.lock   Python deps: faster-whisper only (own .venv via uv sync)
   docs/                     project docs + COMPONENTS.md
   storyboards/<slug>.md     one storyboard per reel (creator approves these)
   legacy_manim/             retired Manim engine, tests, docs 02/04/08, old renders
@@ -69,12 +69,12 @@ Video_automation/
 
 ## New reel checklist
 
-Run from `Video_automation/video/`.
+Run from `video/`.
 
 ```sh
 # once per machine
-npm install
-#   no `uv sync`: it would remove the parent workspace's packages; `uv run` installs faster-whisper as needed
+uv sync                                   # .venv with faster-whisper (uv finds the root pyproject.toml)
+npm ci                                    # exact versions from package-lock.json
 scripts/setup-deep-filter.sh              # denoiser binary, sha256-checked
 cp .env.example .env                      # optional local settings
 
